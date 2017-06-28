@@ -15,6 +15,10 @@ def index(request):
     num_instances_available=BookInstance.objects.filter(status__exact='a').count()
     num_authors=Author.objects.count()  # The 'all()' is implied by default.
 
+    # Number of visits to this view, as counted in the session variable.
+    num_visits=request.session.get('num_visits', 0)
+    request.session['num_visits'] = num_visits+1
+
     #Challenge
     num_genre=Genre.objects.all().count()
     num_book_word=Book.objects.filter(title__contains='pakistan').count()
@@ -23,7 +27,7 @@ def index(request):
     return render(
         request,
         'index.html',
-        context={'num_books':num_books,'num_instances':num_instances,'num_instances_available':num_instances_available,'num_authors':num_authors,'num_genre':num_genre,'num_book_word':num_book_word},
+        context={'num_books':num_books,'num_instances':num_instances,'num_instances_available':num_instances_available,'num_authors':num_authors,'num_genre':num_genre,'num_book_word':num_book_word, 'num_visits':num_visits},
     )
 
 from django.views import generic
