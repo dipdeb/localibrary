@@ -15,6 +15,8 @@ class Genre(models.Model):
         return self.name
 
 from django.urls import reverse #Used to generate URLs by reversing the URL patterns
+from django.contrib.auth.models import User
+from datetime import date
 
 class Language(models.Model):
     """
@@ -73,6 +75,13 @@ class BookInstance(models.Model):
     book = models.ForeignKey('Book', on_delete=models.SET_NULL, null=True) 
     imprint = models.CharField(max_length=200)
     due_back = models.DateField(null=True, blank=True)
+    borrower = models.ForeignKey(User, on_delete=models.SET_NULL, null=True)
+
+    @property
+    def is_overdue(self):
+        if self.due_back and date.today() > self.due_back:
+            return True
+        return False
 
     LOAN_STATUS = (
         ('d', 'Maintenance'),
@@ -86,7 +95,6 @@ class BookInstance(models.Model):
     class Meta:
         ordering = ["due_back"]
         
-
     def __str__(self):
         """
         String for representing the Model object

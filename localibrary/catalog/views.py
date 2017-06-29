@@ -3,6 +3,9 @@ from django.shortcuts import render
 # Create your views here.
 
 from .models import Book, Author, BookInstance, Genre
+from django.views import generic
+
+from django.conf import settings
 
 def index(request):
     """
@@ -22,6 +25,7 @@ def index(request):
     #Challenge
     num_genre=Genre.objects.all().count()
     num_book_word=Book.objects.filter(title__contains='pakistan').count()
+    print(settings)
     
     # Render the HTML template index.html with the data in the context variable
     return render(
@@ -30,7 +34,6 @@ def index(request):
         context={'num_books':num_books,'num_instances':num_instances,'num_instances_available':num_instances_available,'num_authors':num_authors,'num_genre':num_genre,'num_book_word':num_book_word, 'num_visits':num_visits},
     )
 
-from django.views import generic
 
 class BookListView(generic.ListView):
     model = Book
@@ -45,3 +48,16 @@ class AuthorListView(generic.ListView):
 
 class AuthorDetailView(generic.DetailView):
     model = Author
+
+from django.contrib.auth.mixins import LoginRequiredMixin
+
+class LoanedBooksByUserListView(LoginRequiredMixin,generic.ListView):
+    """
+    Generic class-based view listing books on loan to current user. 
+    """
+    model = BookInstance
+    template_name ='catalog/bookinstance_list_borrowed_user.html'
+    paginate_by = 10
+    
+    def get_queryset(self):
+        return BookInstance.objects.filter(borrower=self.request.user).filter(status__exact='o').order_by('due_back')
